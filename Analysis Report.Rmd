@@ -1,0 +1,106 @@
+---
+title: "Stress Related to COVID19 on Healthcare Workers -- ML Analysis"
+subtitle: "By: GSRC, MACL, GJAR for the Bio-Math Group (UABC, UANL, UPP)"
+output: html_document
+bibliography: references.bib
+csl: apa.csl
+---
+
+## Data Quality Report as a preliminary exploration
+
+Since the data is recorded in qualitative scales, the following report is generated based on the [guidelines](https://drive.google.com/file/d/0B0fVQlRpn_q6WE10Q3otZXAyUk0/view?usp=sharing) proposed by @kelleher2020fundamentals.
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+source("Functions/QOfCategoricalF.R")
+datar <- read.csv(file = "Data/datosNum.csv", header = TRUE, sep = ",")
+datar <- na.omit(datar)
+dqr <- QOfCategoricalF(datar[,2:37])
+```
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+library(kableExtra)
+library(tibble)
+
+dqr <- add_column(dqr, variable = names(datar[,2:37]), .before = "Count")
+
+dqr %>%
+  kbl() %>%
+  kable_material("hover", full_width = F)
+library(psych)
+```
+
+# Ward Hierarchical Clustering with Bootstrapped p-Values
+
+
+**Result for Chronbach´s Alpha was: `r round(psych::alpha(datar, check.keys = TRUE)$total$std.alpha,3)`**
+```{r echo=FALSE, message=FALSE, warning=FALSE, fig.width = 11, fig.height = 12}
+#library(psych)
+#psych::alpha(datar, check.keys = TRUE)$total$std.alpha
+
+
+# Ward Hierarchical Clustering with Bootstrapped p values #El buenas buenas!!!!!
+library(pvclust)
+
+#fit <- pvclust(datar, method.hclust="ward",
+fit <- pvclust(datar[,2:37], method.hclust="ward.D",
+               method.dist="euclidean")
+plot(fit) # dendogram with p values
+# add rectangles around groups highly supported by the data
+pvrect(fit, alpha=.95)
+```
+
+
+## Distribution by specific variables
+
+### Level of Stress
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+# An?lisis y ?rbol
+library(C50)
+library(ggplot2)
+library(plotly)
+
+dataC <- read.csv(file = "Data/class.csv", header = TRUE, sep = ",")
+attach(dataC)
+
+dataC <- as.data.frame(dataC)
+countsStress = table(dataC$Class)
+#barplot(countsStress, main="Stress  Distribution in Healthcare Personnel",
+#        xlab="Stress Level", ylab="Frequency") 
+plot_ly(type = "histogram",
+        x = dataC$Class) %>%
+  layout(title = "Distribution of Level of Stress by Profession")
+```
+
+### Distribution by Profession
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+plot_ly(type = "histogram",
+        x = dataC$Prof) %>%
+  layout(title = "Distribution by Profession")
+
+```
+
+## Distribution by Area of Work
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+plot_ly(type = "histogram",
+        x = dataC$area) %>%
+  layout(title = "Distribution by Area of Work")
+
+
+```
+
+
+## Decision Tree
+
+The algorithm used to implement the Decision Tree was [C50](http://www.socr.umich.edu/people/dinov/courses/DSPA_notes/08_DecisionTreeClass.html)
+```{r echo=FALSE, fig.width= 20, fig.height=9, message=FALSE, warning=FALSE}
+#http://mercury.webster.edu/aleshunas/R_learning_infrastructure/Classification%20of%20data%20using%20decision%20tree%20and%20regression%20tree%20methods.html
+modelo.arbol <-C5.0(Class~Prof+area+Dan.Con+Socio+Xeno+Trauma+Comp, data=dataC)
+plot(modelo.arbol, main = "Resulting Decision Tree") 
+
+#summary(modelo.arbol)
+```
+
+
+
+
+
+## References
