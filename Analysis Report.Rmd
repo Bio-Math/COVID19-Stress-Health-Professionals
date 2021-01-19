@@ -59,9 +59,8 @@ library(ggplot2)
 library(plotly)
 
 dataC <- read.csv(file = "Data/class.csv", header = TRUE, sep = ",")
-attach(dataC)
-
-dataC <- as.data.frame(dataC)
+#attach(dataC)
+#dataC <- as.data.frame(dataC)
 countsStress = table(dataC$Class)
 #barplot(countsStress, main="Stress  Distribution in Healthcare Personnel",
 #        xlab="Stress Level", ylab="Frequency") 
@@ -83,8 +82,6 @@ plot_ly(type = "histogram",
 plot_ly(type = "histogram",
         x = dataC$area) %>%
   layout(title = "Distribution by Area of Work")
-
-
 ```
 
 
@@ -93,6 +90,15 @@ plot_ly(type = "histogram",
 The algorithm used to implement the Decision Tree was [C50](http://www.socr.umich.edu/people/dinov/courses/DSPA_notes/08_DecisionTreeClass.html)
 ```{r echo=FALSE, fig.width= 20, fig.height=9, message=FALSE, warning=FALSE}
 #http://mercury.webster.edu/aleshunas/R_learning_infrastructure/Classification%20of%20data%20using%20decision%20tree%20and%20regression%20tree%20methods.html
+dataC$Prof <- as.factor(dataC$Prof)
+dataC$area <- as.factor(dataC$area)
+dataC$Dan.Con <- as.factor(dataC$Dan.Con)
+dataC$Socio <- as.factor(dataC$Socio)
+dataC$Xeno <- as.factor(dataC$Xeno)
+dataC$Trauma <- as.factor(dataC$Trauma)
+dataC$Comp <- as.factor(dataC$Comp)
+dataC$Class <- as.factor(dataC$Class)
+
 modelo.arbol <-C5.0(Class~Prof+area+Dan.Con+Socio+Xeno+Trauma+Comp, data=dataC)
 plot(modelo.arbol, main = "Resulting Decision Tree") 
 
